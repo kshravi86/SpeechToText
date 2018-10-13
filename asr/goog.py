@@ -44,6 +44,7 @@ class worker:
 		last_confidence = -1
 		continuous_transcript = [''] # list of multiple is_final sub-transcripts
 		logger.debug("%s: sending to google = %d",str(chunkIterator))
+		self.request_stream(chunkIterator)
 
 
 if __name__ == "__main__":
