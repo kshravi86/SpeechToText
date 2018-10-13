@@ -63,11 +63,12 @@ class IterableQueue():
 
 def LogStream(chunkIterator, token):
 	try:
-		with open('%s/%s.raw'%(_LOG_PATH, token), 'wb') as f:
+		with open('whatistheweatherthere.wav', 'wb') as f:
 			for chunk in chunkIterator:
 				f.write(chunk)
-	except:
-		logger.error('cannot write speech file')
+				logger.info(str(chunk))
+	except Exception as e:
+		logger.error('cannot write speech file',e)
 
 
 class Listener(stt_pb2.BetaListenerServicer):
@@ -190,13 +191,8 @@ class Listener(stt_pb2.BetaListenerServicer):
 			queue called responseQueue
 		'''
 
-		for asr_response in asr_response_iterator:
-			str_response = asr_response['transcript']
-			is_final = asr_response['is_final']
-			toClient_json = {'asr': asr, 'transcript': str_response,
-								'is_final': is_final}
-			responseQueue.put(toClient_json)
-		# logger.info('merge thread complete')
+
+		logger.info('merge thread complete')
 		return
 
 	def DoConfig(self, request, context):
@@ -251,7 +247,7 @@ class Listener(stt_pb2.BetaListenerServicer):
 		# additional queue for log stream
 		all_queues.append(Queue.Queue())
 
-		logger.debug('%s: Running speech to text', token)
+		logger.info('%s: Running speech to text', token)
 
 		thread_ids = []
 
@@ -305,20 +301,7 @@ class Listener(stt_pb2.BetaListenerServicer):
 				# for t in thread_ids:
 				# 	t.join()
 
-			#TODO: write each record to DB separately because the client
-			#may break the call after just one ASR finishes
-			yield stt_pb2.TranscriptChunk(
-				asr = item_json['asr'],
-				transcript = item_json['transcript'],
-				is_final = item_json['is_final'],
-				confidence = 1.0,
-				)
 
-		try:
-			self._write_to_database(record)
-		except:
-			e = sys.exc_info()[0]
-			logger.error('%s: Database error: %s', token, e)
 
 
 def serve(port):

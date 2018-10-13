@@ -61,31 +61,7 @@ class worker:
     def stream(self, chunkIterator, config=None):
 
         last_transcript = ''
-        try:
-            creds = credentials()
-            client = houndify.StreamingHoundClient(creds['CLIENT_ID'], creds['CLIENT_KEY'],
-                "asr_user")
-            client.setSampleRate(16000)
-            client.setLocation(37.388309, -121.973968)
 
-            responseQueue = Queue.Queue()
-            client.start(ResponseListener(responseQueue))
-            logger.info("%s: Initialized", self.token)
-            t = threading.Thread(target=request_stream, args=(client, chunkIterator, responseQueue))
-            t.start()
-
-            responseIterator =  iter(responseQueue.get, 'EOS')
-            for response in responseIterator:
-                last_transcript = response
-                yield {'transcript' : last_transcript, 'is_final': False, 'confidence': -1}
-
-        except:
-            e = sys.exc_info()[0]
-            logger.error('%s: %s connection error', self.token, e)
-        finally:
-            yield {'transcript' : last_transcript, 'is_final': True, 'confidence': 1}
-            logger.info('%s: finished', self.token)
-            t.join()
 
 
 
